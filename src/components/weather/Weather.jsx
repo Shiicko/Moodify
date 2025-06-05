@@ -9,6 +9,7 @@ export const Weather = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [query, setQuery] = useState("Córdoba");
+  const [playlistGenres, setPlaylistGenres] = useState("");
 
   useEffect(() => {
     if (!query) {
@@ -30,6 +31,7 @@ export const Weather = () => {
       .get(API_URL, { timeout: 5000 })
       .then((res) => {
         setWeatherData(res.data);
+        // console.log("los datos son", res.data);
         setLoading(false);
       })
       .catch((err) => {
@@ -38,6 +40,30 @@ export const Weather = () => {
         setLoading(false);
       });
   }, [query]);
+
+  useEffect(() => {
+    if (weatherData && weatherData.current) {
+      const currentTemp = weatherData.current.temp_c;
+      let genres = "";
+
+      // console.log("El clima es:", currentTemp, "°C");
+
+      if (currentTemp <= 15) {
+        genres = "classical,ambient,jazz";
+      } else if (currentTemp > 15 && currentTemp <= 25) {
+        genres = "indie,lo-fi,bossa-nova";
+        ``;
+      } else if (currentTemp > 25) {
+        genres = "pop,dance,latin,reggaeton";
+      } else {
+        genres = "electronic,chill";
+      }
+      setPlaylistGenres(genres);
+    } else {
+      setPlaylistGenres("");
+    }
+    console.log("el clima es ");
+  }, [weatherData]);
 
   const handleInputChange = (event) => {
     setSearchTerm(event.target.value);
