@@ -1,7 +1,6 @@
 import styled from "styled-components";
 
 export const Main = styled.main`
-  width: 100vw;
   min-height: 100vh;
   padding: 2rem 2.5rem;
   background: linear-gradient(135deg, #0f182a 0%, #1c263f 100%);
@@ -252,4 +251,26 @@ export const Message = styled.p`
     font-size: 1rem;
     margin: 1.5rem 0;
   }
+`;
+export const PlaylistContainer = styled.div`
+  margin-top: 2rem;
+`;
+
+export const TrackCard = styled.div`
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+`;
+
+export const TrackInfo = styled.div`
+  margin-left: 1rem;
+`;
+
+export const TrackName = styled.div`
+  font-weight: bold;
+`;
+
+export const TrackArtist = styled.div`
+  font-size: 0.9rem;
+  color: #666;
 `;

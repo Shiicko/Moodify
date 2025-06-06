@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
 import { useEffect, useState } from "react";
 import * as s from "./StyledWeather";
@@ -10,6 +11,9 @@ export const Weather = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [query, setQuery] = useState("Córdoba");
   const [playlistGenres, setPlaylistGenres] = useState("");
+  const [spotifyPlaylist, setSpotifyPlaylist] = useState([]);
+  const [spotifyLoading, setSpotifyLoading] = useState(false);
+  const [spotifyError, setSpotifyError] = useState(null);
 
   useEffect(() => {
     if (!query) {
@@ -31,11 +35,9 @@ export const Weather = () => {
       .get(API_URL, { timeout: 5000 })
       .then((res) => {
         setWeatherData(res.data);
-        // console.log("los datos son", res.data);
         setLoading(false);
       })
       .catch((err) => {
-        console.log("error al obtener datos");
         setError(err);
         setLoading(false);
       });
@@ -46,31 +48,73 @@ export const Weather = () => {
       const currentTemp = weatherData.current.temp_c;
       let genres = "";
 
-      // console.log("El clima es:", currentTemp, "°C");
-
       if (currentTemp <= 15) {
-        genres = "classical,ambient,jazz";
+        genres = "sad,melancholic,acoustic,slow";
       } else if (currentTemp > 15 && currentTemp <= 25) {
         genres = "indie,lo-fi,bossa-nova";
-        ``;
       } else if (currentTemp > 25) {
-        genres = "pop,dance,latin,reggaeton";
+        genres = "reggaeton,trap,latin,urban";
       } else {
         genres = "electronic,chill";
       }
+
       setPlaylistGenres(genres);
     } else {
       setPlaylistGenres("");
     }
-    console.log("el clima es ");
   }, [weatherData]);
+
+  useEffect(() => {
+    if (!playlistGenres || spotifyLoading) {
+      setSpotifyPlaylist([]);
+      return;
+    }
+
+    const fetchSpotifyRecommendations = async () => {
+      setSpotifyLoading(true);
+      setSpotifyError(null);
+      setSpotifyPlaylist([]);
+
+      const mainGenre = playlistGenres.split(",")[0] || "pop";
+
+      const options = {
+        method: "GET",
+        url: "https://spotify23.p.rapidapi.com/search/",
+        params: {
+          q: mainGenre,
+          type: "tracks",
+          limit: "10",
+        },
+        headers: {
+          "x-rapidapi-key":
+            "6d9bdcb4d5msh2da2a18c587299ap1a10f1jsndae292aeaebd",
+          "x-rapidapi-host": "spotify23.p.rapidapi.com",
+        },
+      };
+
+      try {
+        const response = await axios.request(options);
+        console.log("Spotify response:", response.data);
+
+        const tracks = response?.data?.tracks?.items || [];
+        setSpotifyPlaylist(tracks);
+        console.log(spotifyPlaylist);
+      } catch (err) {
+        setSpotifyError(err);
+      } finally {
+        setSpotifyLoading(false);
+      }
+    };
+
+    fetchSpotifyRecommendations();
+  }, [playlistGenres]);
 
   const handleInputChange = (event) => {
     setSearchTerm(event.target.value);
   };
   const handleSearchSubmit = (event) => {
     event.preventDefault();
-    setQuery(searchTerm);
+    if (searchTerm.trim() !== "") setQuery(searchTerm.trim());
   };
 
   const forecastDays = weatherData?.forecast?.forecastday
@@ -145,9 +189,62 @@ export const Weather = () => {
               ))}
             </s.ForecastContainer>
           )}
+
+          {spotifyLoading && <s.Message>Cargando canciones...</s.Message>}
+
+          {spotifyError && (
+            <s.Message $isError>
+              Error al cargar canciones:{" "}
+              {spotifyError.message || "Error desconocido."}
+            </s.Message>
+          )}
+
+          {spotifyPlaylist.length > 0 && (
+            <s.PlaylistContainer>
+              <s.Heading>Canciones recomendadas</s.Heading>
+              {spotifyPlaylist.map((track, index) => {
+                const t = track.data;
+                const artistNames = t.artists?.items
+                  ? t.artists.items.map((a) => a.profile.name).join(", ")
+                  : "Artista no disponible";
+                const trackId = t.uri?.split(":")[2];
+                const spotifyLink = trackId
+                  ? `https://open.spotify.com/track/${trackId}`
+                  : null;
+
+                return (
+                  <s.TrackCard key={t.id || index}>
+                    <img
+                      src={t.albumOfTrack?.coverArt?.sources?.[0]?.url || ""}
+                      alt={t.name || "Canción"}
+                      width={64}
+                      height={64}
+                      style={{ borderRadius: "8px" }}
+                    />
+                    <s.TrackInfo>
+                      <s.TrackName>
+                        {t.name || "Nombre no disponible"}
+                      </s.TrackName>
+                      <s.TrackArtist>{artistNames}</s.TrackArtist>
+                      {spotifyLink ? (
+                        <a
+                          href={spotifyLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Escuchar en Spotify
+                        </a>
+                      ) : (
+                        <span>Link no disponible</span>
+                      )}
+                    </s.TrackInfo>
+                  </s.TrackCard>
+                );
+              })}
+            </s.PlaylistContainer>
+          )}
         </>
       )}
-
       {!weatherData && !loading && !error && (
         <s.Message>Ingresa una ciudad para ver el clima.</s.Message>
       )}
