@@ -53,31 +53,31 @@ export const Weather = () => {
       let moodTerm = "";
 
       if (currentTemp <= 15) {
-        genres = "rock,pop,hip hop,r&b"; // Géneros populares para el frío
+        genres = "rock,pop,hip hop,r&b";
         moodTerm = "sad";
       } else if (currentTemp > 15 && currentTemp <= 25) {
-        genres = "reggaeton,latin pop,pop,dance"; // Géneros populares para el templado
+        genres = "reggaeton,latin pop,pop,dance";
         moodTerm = "upbeat";
       } else if (currentTemp > 25) {
-        genres = "cumbia,salsa,reggae,latin urban"; // Géneros populares para el calor
+        genres = "cumbia,salsa,reggae,latin urban";
         moodTerm = "energetic";
       } else {
-        genres = "electronic,indie,alternative,ambient"; // Géneros por defecto si no hay match claro
+        genres = "electronic,indie,alternative,ambient";
         moodTerm = "relaxing";
       }
 
       if (weatherCondition.includes("lluvia")) {
         moodTerm = "rainy";
-        genres = "jazz,blues,lo-fi,soul"; // Géneros para la lluvia
+        genres = "jazz,blues,lo-fi,soul";
       } else if (
         weatherCondition.includes("soleado") ||
         weatherCondition.includes("despejado")
       ) {
         moodTerm = "sunny";
-        genres = "pop,reggaeton,trap,hip hop"; // Géneros para el sol
+        genres = "pop,reggaeton,trap,hip hop";
       } else if (weatherCondition.includes("nublado")) {
         moodTerm = "chill";
-        genres = "acoustic,folk,indie pop,soft rock"; // Géneros para el nublado
+        genres = "acoustic,folk,indie pop,soft rock";
       }
 
       setPlaylistGenres(genres);
@@ -258,14 +258,11 @@ export const Weather = () => {
       };
 
       const searchQueries = [];
-      const MAX_QUERIES_PER_GENRE = 2; // Para evitar demasiadas consultas por género
+      const MAX_QUERIES_PER_GENRE = 2;
 
       genresArray.slice(0, 3).forEach((genre) => {
-        // Seleccionamos hasta 3 géneros principales
-        // Primero, intentamos buscar canciones populares del género
         searchQueries.push(`${genre} songs`);
 
-        // Luego, si tenemos artistas de ejemplo para el género, elegimos uno al azar y buscamos sus canciones
         if (
           exampleArtistsByGenre[genre] &&
           exampleArtistsByGenre[genre].length > 0
@@ -278,12 +275,11 @@ export const Weather = () => {
         }
       });
 
-      // Si la cantidad de queries es baja, añadimos una búsqueda más general para asegurar resultados
       if (searchQueries.length < 3) {
         searchQueries.push("top global songs");
       }
 
-      const combinedQuery = searchQueries.join(" OR "); // Usamos OR para ampliar los resultados
+      const combinedQuery = searchQueries.join(" OR ");
 
       const options = {
         method: "GET",
@@ -351,12 +347,11 @@ export const Weather = () => {
         <s.Button type="submit">Buscar</s.Button>
       </s.Form>
 
-      {loading && <s.Message>Cargando clima bajo las estrellas...</s.Message>}
+      {loading && <s.Message>Cargando clima...</s.Message>}
 
       {error && (
         <s.Message $isError>
-          Error cósmico al cargar el clima:{" "}
-          {error.message || "Ciudad no encontrada en las constelaciones."}
+          Error al cargar el clima: {error.message || "Ciudad no encontrada."}
         </s.Message>
       )}
 
@@ -410,12 +405,12 @@ export const Weather = () => {
           )}
 
           {spotifyLoading && (
-            <s.Message>Buscando melodías entre las estrellas...</s.Message>
+            <s.Message>Buscando canciones entre las estrellas...</s.Message>
           )}
 
           {spotifyError && (
             <s.Message $isError>
-              Las ondas sonoras se perdieron en el cosmos:{" "}
+              Canción perdida en el espacio:
               {spotifyError.message ||
                 "Error desconocido en la nebulosa musical."}
             </s.Message>
@@ -424,7 +419,7 @@ export const Weather = () => {
           {spotifyPlaylist.length > 0 && (
             <s.PlaylistSection>
               <s.PlaylistHeading>
-                Tu banda sonora galáctica 🎵
+                Las canciones para vos... 🎵
               </s.PlaylistHeading>
               <s.PlayerCard>
                 {(() => {
