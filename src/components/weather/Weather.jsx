@@ -1,6 +1,5 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import * as s from "./StyledWeather";
 import axios from "axios";
 
@@ -9,11 +8,14 @@ export const Weather = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [query, setQuery] = useState("Córdoba");
+  const [query, setQuery] = useState("Ushuaia");
   const [playlistGenres, setPlaylistGenres] = useState("");
   const [spotifyPlaylist, setSpotifyPlaylist] = useState([]);
   const [spotifyLoading, setSpotifyLoading] = useState(false);
   const [spotifyError, setSpotifyError] = useState(null);
+  const [currentSongIndex, setCurrentSongIndex] = useState(0);
+
+  const isInitialMount = useRef(true);
 
   useEffect(() => {
     if (!query) {
@@ -46,16 +48,36 @@ export const Weather = () => {
   useEffect(() => {
     if (weatherData && weatherData.current) {
       const currentTemp = weatherData.current.temp_c;
+      const weatherCondition = weatherData.current.condition.text.toLowerCase();
       let genres = "";
+      let moodTerm = "";
 
       if (currentTemp <= 15) {
-        genres = "sad,melancholic,acoustic,slow";
+        genres = "rock,pop,hip hop,r&b"; // Géneros populares para el frío
+        moodTerm = "sad";
       } else if (currentTemp > 15 && currentTemp <= 25) {
-        genres = "indie,lo-fi,bossa-nova";
+        genres = "reggaeton,latin pop,pop,dance"; // Géneros populares para el templado
+        moodTerm = "upbeat";
       } else if (currentTemp > 25) {
-        genres = "reggaeton,trap,latin,urban";
+        genres = "cumbia,salsa,reggae,latin urban"; // Géneros populares para el calor
+        moodTerm = "energetic";
       } else {
-        genres = "electronic,chill";
+        genres = "electronic,indie,alternative,ambient"; // Géneros por defecto si no hay match claro
+        moodTerm = "relaxing";
+      }
+
+      if (weatherCondition.includes("lluvia")) {
+        moodTerm = "rainy";
+        genres = "jazz,blues,lo-fi,soul"; // Géneros para la lluvia
+      } else if (
+        weatherCondition.includes("soleado") ||
+        weatherCondition.includes("despejado")
+      ) {
+        moodTerm = "sunny";
+        genres = "pop,reggaeton,trap,hip hop"; // Géneros para el sol
+      } else if (weatherCondition.includes("nublado")) {
+        moodTerm = "chill";
+        genres = "acoustic,folk,indie pop,soft rock"; // Géneros para el nublado
       }
 
       setPlaylistGenres(genres);
@@ -65,7 +87,12 @@ export const Weather = () => {
   }, [weatherData]);
 
   useEffect(() => {
-    if (!playlistGenres || spotifyLoading) {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
+    if (!playlistGenres) {
       setSpotifyPlaylist([]);
       return;
     }
@@ -74,31 +101,208 @@ export const Weather = () => {
       setSpotifyLoading(true);
       setSpotifyError(null);
       setSpotifyPlaylist([]);
+      setCurrentSongIndex(0);
 
-      const mainGenre = playlistGenres.split(",")[0] || "pop";
+      const genresArray = playlistGenres.split(",");
+      const exampleArtistsByGenre = {
+        rock: ["Queen", "Led Zeppelin", "Soda Stereo", "Metallica", "AC/DC"],
+        pop: [
+          "Taylor Swift",
+          "Bad Bunny",
+          "Billie Eilish",
+          "Dua Lipa",
+          "Harry Styles",
+        ],
+        "hip hop": [
+          "Drake",
+          "Kendrick Lamar",
+          "Eminem",
+          "Travis Scott",
+          "J. Cole",
+        ],
+        "r&b": ["Beyoncé", "The Weeknd", "Rihanna", "Usher", "SZA"],
+        reggaeton: [
+          "Daddy Yankee",
+          "J Balvin",
+          "Bad Bunny",
+          "Karol G",
+          "Ozuna",
+        ],
+        "latin pop": [
+          "Shakira",
+          "Ricky Martin",
+          "Luis Fonsi",
+          "Maluma",
+          "Camilo",
+        ],
+        trap: [
+          "Anuel AA",
+          "Bad Bunny",
+          "Travis Scott",
+          "Future",
+          "Lil Uzi Vert",
+        ],
+        dance: [
+          "David Guetta",
+          "Calvin Harris",
+          "Tiësto",
+          "Avicii",
+          "Marshmello",
+        ],
+        cumbia: [
+          "Los Palmeras",
+          "Gilda",
+          "Damas Gratis",
+          "Amar Azul",
+          "La Delio Valdez",
+        ],
+        salsa: [
+          "Marc Anthony",
+          "Rubén Blades",
+          "Celia Cruz",
+          "Héctor Lavoe",
+          "Willie Colón",
+        ],
+        reggae: [
+          "Bob Marley",
+          "Peter Tosh",
+          "UB40",
+          "Damian Marley",
+          "Protoje",
+        ],
+        "latin urban": [
+          "Bad Bunny",
+          "Rauw Alejandro",
+          "Myke Towers",
+          "Sech",
+          "Nicky Jam",
+        ],
+        electronic: [
+          "Daft Punk",
+          "Skrillex",
+          "The Chemical Brothers",
+          "Deadmau5",
+          "Disclosure",
+        ],
+        indie: [
+          "Arctic Monkeys",
+          "The Strokes",
+          "Vance Joy",
+          "Florence + The Machine",
+          "Tame Impala",
+        ],
+        alternative: [
+          "Nirvana",
+          "Radiohead",
+          "Red Hot Chili Peppers",
+          "Linkin Park",
+          "Green Day",
+        ],
+        ambient: [
+          "Brian Eno",
+          "Aphex Twin",
+          "Sigur Rós",
+          "Tycho",
+          "Boards of Canada",
+        ],
+        jazz: [
+          "Miles Davis",
+          "Louis Armstrong",
+          "John Coltrane",
+          "Ella Fitzgerald",
+          "Frank Sinatra",
+        ],
+        blues: [
+          "B.B. King",
+          "Muddy Waters",
+          "Eric Clapton",
+          "John Lee Hooker",
+          "Stevie Ray Vaughan",
+        ],
+        "lo-fi": ["Jinsang", "Idealism", "potsu", "Ehrling", "Nujabes"],
+        soul: [
+          "Aretha Franklin",
+          "Stevie Wonder",
+          "Marvin Gaye",
+          "Bill Withers",
+          "Sam Cooke",
+        ],
+        acoustic: [
+          "Ed Sheeran",
+          "Jack Johnson",
+          "Damien Rice",
+          "Bon Iver",
+          "Passenger",
+        ],
+        folk: [
+          "Bob Dylan",
+          "Joni Mitchell",
+          "Simon & Garfunkel",
+          "Mumford & Sons",
+          "The Lumineers",
+        ],
+        "indie pop": [
+          "The 1975",
+          "Lorde",
+          "Lana Del Rey",
+          "Halsey",
+          "Imagine Dragons",
+        ],
+        "soft rock": [
+          "Fleetwood Mac",
+          "Eagles",
+          "Billy Joel",
+          "Elton John",
+          "Phil Collins",
+        ],
+      };
+
+      const searchQueries = [];
+      const MAX_QUERIES_PER_GENRE = 2; // Para evitar demasiadas consultas por género
+
+      genresArray.slice(0, 3).forEach((genre) => {
+        // Seleccionamos hasta 3 géneros principales
+        // Primero, intentamos buscar canciones populares del género
+        searchQueries.push(`${genre} songs`);
+
+        // Luego, si tenemos artistas de ejemplo para el género, elegimos uno al azar y buscamos sus canciones
+        if (
+          exampleArtistsByGenre[genre] &&
+          exampleArtistsByGenre[genre].length > 0
+        ) {
+          const randomArtist =
+            exampleArtistsByGenre[genre][
+              Math.floor(Math.random() * exampleArtistsByGenre[genre].length)
+            ];
+          searchQueries.push(`${randomArtist} songs`);
+        }
+      });
+
+      // Si la cantidad de queries es baja, añadimos una búsqueda más general para asegurar resultados
+      if (searchQueries.length < 3) {
+        searchQueries.push("top global songs");
+      }
+
+      const combinedQuery = searchQueries.join(" OR "); // Usamos OR para ampliar los resultados
 
       const options = {
         method: "GET",
         url: "https://spotify23.p.rapidapi.com/search/",
         params: {
-          q: mainGenre,
+          q: combinedQuery,
           type: "tracks",
-          limit: "10",
+          limit: "30",
         },
         headers: {
-          "x-rapidapi-key":
-            "6d9bdcb4d5msh2da2a18c587299ap1a10f1jsndae292aeaebd",
+          "x-rapidapi-key": import.meta.env.VITE_SPOTIFY_API_KEY,
           "x-rapidapi-host": "spotify23.p.rapidapi.com",
         },
       };
 
       try {
         const response = await axios.request(options);
-        console.log("Spotify response:", response.data);
-
         const tracks = response?.data?.tracks?.items || [];
         setSpotifyPlaylist(tracks);
-        console.log(spotifyPlaylist);
       } catch (err) {
         setSpotifyError(err);
       } finally {
@@ -107,18 +311,32 @@ export const Weather = () => {
     };
 
     fetchSpotifyRecommendations();
-  }, [playlistGenres]);
+  }, [playlistGenres, weatherData]);
 
   const handleInputChange = (event) => {
     setSearchTerm(event.target.value);
   };
+
   const handleSearchSubmit = (event) => {
     event.preventDefault();
     if (searchTerm.trim() !== "") setQuery(searchTerm.trim());
   };
 
+  const goToNextSong = () => {
+    setCurrentSongIndex(
+      (prevIndex) => (prevIndex + 1) % spotifyPlaylist.length
+    );
+  };
+
+  const goToPreviousSong = () => {
+    setCurrentSongIndex(
+      (prevIndex) =>
+        (prevIndex - 1 + spotifyPlaylist.length) % spotifyPlaylist.length
+    );
+  };
+
   const forecastDays = weatherData?.forecast?.forecastday
-    ? weatherData.forecast.forecastday.slice(1)
+    ? weatherData.forecast.forecastday.slice(1, 4)
     : [];
 
   return (
@@ -133,16 +351,17 @@ export const Weather = () => {
         <s.Button type="submit">Buscar</s.Button>
       </s.Form>
 
-      {loading && <s.Message>Cargando clima...</s.Message>}
+      {loading && <s.Message>Cargando clima bajo las estrellas...</s.Message>}
 
       {error && (
         <s.Message $isError>
-          Error al cargar el clima: {error.message || "Ciudad no encontrada."}
+          Error cósmico al cargar el clima:{" "}
+          {error.message || "Ciudad no encontrada en las constelaciones."}
         </s.Message>
       )}
 
       {weatherData && !loading && !error && (
-        <>
+        <s.ContentWrapper>
           <s.WeatherContainer>
             <s.WeatherIcon
               src={weatherData.current.condition.icon}
@@ -190,63 +409,87 @@ export const Weather = () => {
             </s.ForecastContainer>
           )}
 
-          {spotifyLoading && <s.Message>Cargando canciones...</s.Message>}
+          {spotifyLoading && (
+            <s.Message>Buscando melodías entre las estrellas...</s.Message>
+          )}
 
           {spotifyError && (
             <s.Message $isError>
-              Error al cargar canciones:{" "}
-              {spotifyError.message || "Error desconocido."}
+              Las ondas sonoras se perdieron en el cosmos:{" "}
+              {spotifyError.message ||
+                "Error desconocido en la nebulosa musical."}
             </s.Message>
           )}
 
           {spotifyPlaylist.length > 0 && (
-            <s.PlaylistContainer>
-              <s.Heading>Canciones recomendadas</s.Heading>
-              {spotifyPlaylist.map((track, index) => {
-                const t = track.data;
-                const artistNames = t.artists?.items
-                  ? t.artists.items.map((a) => a.profile.name).join(", ")
-                  : "Artista no disponible";
-                const trackId = t.uri?.split(":")[2];
-                const spotifyLink = trackId
-                  ? `https://open.spotify.com/track/${trackId}`
-                  : null;
+            <s.PlaylistSection>
+              <s.PlaylistHeading>
+                Tu banda sonora galáctica 🎵
+              </s.PlaylistHeading>
+              <s.PlayerCard>
+                {(() => {
+                  const track = spotifyPlaylist[currentSongIndex];
+                  const t = track.data;
+                  const artistNames = t.artists?.items
+                    ? t.artists.items.map((a) => a.profile.name).join(", ")
+                    : "Artista celestial desconocido";
+                  const trackId = t.uri?.split(":")[2];
+                  const spotifyLink = trackId
+                    ? `https://open.spotify.com/track/${trackId}`
+                    : null;
 
-                return (
-                  <s.TrackCard key={t.id || index}>
-                    <img
-                      src={t.albumOfTrack?.coverArt?.sources?.[0]?.url || ""}
-                      alt={t.name || "Canción"}
-                      width={64}
-                      height={64}
-                      style={{ borderRadius: "8px" }}
-                    />
-                    <s.TrackInfo>
-                      <s.TrackName>
-                        {t.name || "Nombre no disponible"}
-                      </s.TrackName>
-                      <s.TrackArtist>{artistNames}</s.TrackArtist>
-                      {spotifyLink ? (
-                        <a
-                          href={spotifyLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          Escuchar en Spotify
-                        </a>
-                      ) : (
-                        <span>Link no disponible</span>
-                      )}
-                    </s.TrackInfo>
-                  </s.TrackCard>
-                );
-              })}
-            </s.PlaylistContainer>
+                  return (
+                    <>
+                      <s.PlayerAlbumArt
+                        src={
+                          t.albumOfTrack?.coverArt?.sources?.[0]?.url ||
+                          "https://via.placeholder.com/180/303841/e0f2f7?text=Álbum"
+                        }
+                        alt={t.name || "Melodía"}
+                      />
+                      <s.PlayerTrackInfo>
+                        <s.PlayerTrackName>
+                          {t.name || "Título interestelar no disponible"}
+                        </s.PlayerTrackName>
+                        <s.PlayerTrackArtist>{artistNames}</s.PlayerTrackArtist>
+                        {spotifyLink ? (
+                          <s.PlayerSpotifyLink
+                            href={spotifyLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Abrir en Spotify
+                          </s.PlayerSpotifyLink>
+                        ) : (
+                          <s.LinkNotAvailable>
+                            Enlace de Spotify no disponible
+                          </s.LinkNotAvailable>
+                        )}
+                      </s.PlayerTrackInfo>
+                    </>
+                  );
+                })()}
+                <s.PlayerControls>
+                  <s.PlayerButton
+                    onClick={goToPreviousSong}
+                    disabled={spotifyPlaylist.length <= 1}
+                  >
+                    <s.PrevIcon />
+                  </s.PlayerButton>
+                  <s.PlayerButton
+                    onClick={goToNextSong}
+                    disabled={spotifyPlaylist.length <= 1}
+                  >
+                    <s.NextIcon />
+                  </s.PlayerButton>
+                </s.PlayerControls>
+              </s.PlayerCard>
+            </s.PlaylistSection>
           )}
-        </>
+        </s.ContentWrapper>
       )}
       {!weatherData && !loading && !error && (
-        <s.Message>Ingresa una ciudad para ver el clima.</s.Message>
+        <s.Message>Observa las estrellas e ingresa una ciudad.</s.Message>
       )}
     </s.Main>
   );
