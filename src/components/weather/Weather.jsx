@@ -52,37 +52,60 @@ export const Weather = () => {
       let genres = "";
       let moodTerm = "";
 
-      if (currentTemp <= 15) {
-        genres = "rock,pop,hip hop,r&b";
-        moodTerm = "sad";
-      } else if (currentTemp > 15 && currentTemp <= 25) {
-        genres = "reggaeton,latin pop,pop,dance";
-        moodTerm = "upbeat";
-      } else if (currentTemp > 25) {
-        genres = "cumbia,salsa,reggae,latin urban";
-        moodTerm = "energetic";
+      if (weatherData && weatherData.current) {
+        const currentTemp = weatherData.current.temp_c;
+        const weatherCondition =
+          weatherData.current.condition.text.toLowerCase();
+        let genres = "";
+        let moodTerm = "";
+
+        if (currentTemp <= 10) {
+          genres = "soft rock,acoustic,folk,ambient,jazz,blues,lo-fi,soul";
+          moodTerm = "melancholic";
+        } else if (currentTemp > 10 && currentTemp <= 20) {
+          genres = "rock,indie,alternative,pop,r&b,acoustic,folk";
+          moodTerm = "chill";
+        } else if (currentTemp > 20 && currentTemp <= 28) {
+          genres = "pop,reggaeton,latin pop,dance,hip hop,latin urban";
+          moodTerm = "upbeat";
+        } else if (currentTemp > 28) {
+          genres = "cumbia,salsa,reggae,latin urban,reggaeton,dance";
+          moodTerm = "energetic";
+        } else {
+          genres = "electronic,indie,alternative,ambient";
+          moodTerm = "relaxing";
+        }
+
+        if (
+          weatherCondition.includes("lluvia") ||
+          weatherCondition.includes("llovizna")
+        ) {
+          moodTerm = "rainy";
+          genres = "jazz,blues,lo-fi,soul,acoustic,ambient";
+        } else if (
+          weatherCondition.includes("soleado") ||
+          weatherCondition.includes("despejado")
+        ) {
+          moodTerm = "sunny";
+          genres = `pop,reggaeton,trap,hip hop,${genres}`;
+        } else if (weatherCondition.includes("nublado")) {
+          moodTerm = "chill";
+          genres = "acoustic,folk,indie pop,soft rock,ambient,jazz";
+        } else if (
+          weatherCondition.includes("niebla") ||
+          weatherCondition.includes("neblina")
+        ) {
+          moodTerm = "mysterious";
+          genres = "ambient,classical,instrumental,jazz";
+        } else if (weatherCondition.includes("nieve")) {
+          moodTerm = "cozy";
+          genres = "classical,jazz,folk,acoustic";
+        }
+
+        setPlaylistGenres(genres);
       } else {
-        genres = "electronic,indie,alternative,ambient";
-        moodTerm = "relaxing";
+        setPlaylistGenres("");
       }
-
-      if (weatherCondition.includes("lluvia")) {
-        moodTerm = "rainy";
-        genres = "jazz,blues,lo-fi,soul";
-      } else if (
-        weatherCondition.includes("soleado") ||
-        weatherCondition.includes("despejado")
-      ) {
-        moodTerm = "sunny";
-        genres = "pop,reggaeton,trap,hip hop";
-      } else if (weatherCondition.includes("nublado")) {
-        moodTerm = "chill";
-        genres = "acoustic,folk,indie pop,soft rock";
-      }
-
-      setPlaylistGenres(genres);
-    } else {
-      setPlaylistGenres("");
     }
   }, [weatherData]);
 
@@ -105,42 +128,96 @@ export const Weather = () => {
 
       const genresArray = playlistGenres.split(",");
       const exampleArtistsByGenre = {
-        rock: ["Queen", "Led Zeppelin", "Soda Stereo", "Metallica", "AC/DC"],
+        rock: [
+          "Queen",
+          "Led Zeppelin",
+          "Soda Stereo",
+          "Metallica",
+          "AC/DC",
+          "Enanitos Verdes",
+          "Gustavo Cerati",
+          "Charly García",
+          "Luis Alberto Spinetta",
+          "Divididos",
+          "La Renga",
+          "Patricio Rey y sus Redonditos de Ricota",
+          "Spinettalandia y Sus Amigos",
+          "Pescado Rabioso",
+        ],
         pop: [
           "Taylor Swift",
-          "Bad Bunny",
-          "Billie Eilish",
           "Dua Lipa",
           "Harry Styles",
+          "Michael Jackson",
+          "Madonna",
+          "Luis Miguel",
+          "Ricardo Arjona",
+          "Adele",
+          "Ed Sheeran",
+          "Jesse & Joy",
+          "Julieta Venegas",
+          "Silvio Rodríguez",
+          "Fito Páez",
         ],
         "hip hop": [
           "Drake",
           "Kendrick Lamar",
           "Eminem",
-          "Travis Scott",
-          "J. Cole",
+          "Cypress Hill",
+          "Beastie Boys",
+          "Wu-Tang Clan",
+          "Nas",
+          "Dr. Dre",
+          "Calle 13",
+          "Kase.O",
         ],
-        "r&b": ["Beyoncé", "The Weeknd", "Rihanna", "Usher", "SZA"],
+        "r&b": [
+          "Beyoncé",
+          "The Weeknd",
+          "Rihanna",
+          "Usher",
+          "SZA",
+          "Marvin Gaye",
+          "Aretha Franklin",
+          "Stevie Wonder",
+          "Alicia Keys",
+          "D'Angelo",
+          "Erykah Badu",
+        ],
         reggaeton: [
           "Daddy Yankee",
           "J Balvin",
           "Bad Bunny",
           "Karol G",
           "Ozuna",
+          "Don Omar",
+          "Tego Calderón",
+          "Maluma",
+          "Shakira",
+          "Wisin & Yandel",
+          "Zion & Lennox",
         ],
         "latin pop": [
           "Shakira",
           "Ricky Martin",
           "Luis Fonsi",
-          "Maluma",
           "Camilo",
+          "Alejandro Sanz",
+          "Marc Anthony",
+          "Gloria Estefan",
+          "Chayanne",
+          "Juanes",
+          "Mon Laferte",
+          "Natalia Lafourcade",
         ],
         trap: [
-          "Anuel AA",
-          "Bad Bunny",
-          "Travis Scott",
-          "Future",
-          "Lil Uzi Vert",
+          "Duki",
+          "C. Tangana",
+          "Paulo Londra",
+          "Nicki Nicole",
+          "Trueno",
+          "Bizarrap",
+          "Wos",
         ],
         dance: [
           "David Guetta",
@@ -148,6 +225,12 @@ export const Weather = () => {
           "Tiësto",
           "Avicii",
           "Marshmello",
+          "Fatboy Slim",
+          "The Chemical Brothers",
+          "Disclosure",
+          "Kygo",
+          "Purple Disco Machine",
+          "Fred again..",
         ],
         cumbia: [
           "Los Palmeras",
@@ -155,6 +238,12 @@ export const Weather = () => {
           "Damas Gratis",
           "Amar Azul",
           "La Delio Valdez",
+          "Los Auténticos Decadentes",
+          "Sonora Dinamita",
+          "Leo Mattioli",
+          "Antonio Ríos",
+          "Santaferia",
+          "El Polaco",
         ],
         salsa: [
           "Marc Anthony",
@@ -162,6 +251,12 @@ export const Weather = () => {
           "Celia Cruz",
           "Héctor Lavoe",
           "Willie Colón",
+          "Frankie Ruiz",
+          "Fania All-Stars",
+          "Gilberto Santa Rosa",
+          "Víctor Manuelle",
+          "La India",
+          "Ismael Rivera",
         ],
         reggae: [
           "Bob Marley",
@@ -169,6 +264,11 @@ export const Weather = () => {
           "UB40",
           "Damian Marley",
           "Protoje",
+          "Los Cafres",
+          "Nonpalidece",
+          "Zona Ganjah",
+          "Cultura Profética",
+          "Alpha Blondy",
         ],
         "latin urban": [
           "Bad Bunny",
@@ -176,6 +276,11 @@ export const Weather = () => {
           "Myke Towers",
           "Sech",
           "Nicky Jam",
+          "Anitta",
+          "Becky G",
+          "Rosalía",
+          "Cazzu",
+          "Quevedo",
         ],
         electronic: [
           "Daft Punk",
@@ -183,6 +288,12 @@ export const Weather = () => {
           "The Chemical Brothers",
           "Deadmau5",
           "Disclosure",
+          "Kraftwerk",
+          "Jean-Michel Jarre",
+          "Aphex Twin",
+          "Orbital",
+          "Tycho",
+          "Jon Hopkins",
         ],
         indie: [
           "Arctic Monkeys",
@@ -190,6 +301,12 @@ export const Weather = () => {
           "Vance Joy",
           "Florence + The Machine",
           "Tame Impala",
+          "Jack Johnson",
+          "The Killers",
+          "Bon Iver",
+          "Daughter",
+          "Local Natives",
+          "Wet Leg",
         ],
         alternative: [
           "Nirvana",
@@ -197,6 +314,13 @@ export const Weather = () => {
           "Red Hot Chili Peppers",
           "Linkin Park",
           "Green Day",
+          "Pearl Jam",
+          "Foo Fighters",
+          "Depeche Mode",
+          "Pixies",
+          "Soundgarden",
+          "Stone Temple Pilots",
+          "Alice in Chains",
         ],
         ambient: [
           "Brian Eno",
@@ -204,6 +328,11 @@ export const Weather = () => {
           "Sigur Rós",
           "Tycho",
           "Boards of Canada",
+          "Enya",
+          "Vangelis",
+          "Max Richter",
+          "Nils Frahm",
+          "Hammock",
         ],
         jazz: [
           "Miles Davis",
@@ -211,6 +340,12 @@ export const Weather = () => {
           "John Coltrane",
           "Ella Fitzgerald",
           "Frank Sinatra",
+          "Bill Evans",
+          "Nina Simone",
+          "Herbie Hancock",
+          "Dave Brubeck",
+          "Brad Mehldau",
+          "Esperanza Spalding",
         ],
         blues: [
           "B.B. King",
@@ -218,14 +353,38 @@ export const Weather = () => {
           "Eric Clapton",
           "John Lee Hooker",
           "Stevie Ray Vaughan",
+          "Etta James",
+          "Howlin' Wolf",
+          "John Mayer",
+          "Gary Clark Jr.",
+          "Robert Johnson",
+          "Son House",
         ],
-        "lo-fi": ["Jinsang", "Idealism", "potsu", "Ehrling", "Nujabes"],
+        "lo-fi": [
+          "Jinsang",
+          "Idealism",
+          "potsu",
+          "Ehrling",
+          "Nujabes",
+          "Tomppabeats",
+          "Kupla",
+          "Lofi Girl",
+          "Chillhop Music",
+          "Joakim Karud",
+          "Saib",
+        ],
         soul: [
           "Aretha Franklin",
           "Stevie Wonder",
           "Marvin Gaye",
           "Bill Withers",
           "Sam Cooke",
+          "Etta James",
+          "Otis Redding",
+          "Amy Winehouse",
+          "Donny Hathaway",
+          "Leon Bridges",
+          "Celeste",
         ],
         acoustic: [
           "Ed Sheeran",
@@ -233,6 +392,12 @@ export const Weather = () => {
           "Damien Rice",
           "Bon Iver",
           "Passenger",
+          "José González",
+          "Ben Howard",
+          "Jason Mraz",
+          "Ximena Sariñana",
+          "Agnes Obel",
+          "Fink",
         ],
         folk: [
           "Bob Dylan",
@@ -240,6 +405,12 @@ export const Weather = () => {
           "Simon & Garfunkel",
           "Mumford & Sons",
           "The Lumineers",
+          "Mercedes Sosa",
+          "Atahualpa Yupanqui",
+          "Joan Baez",
+          "Leonard Cohen",
+          "Devendra Banhart",
+          "Iron & Wine",
         ],
         "indie pop": [
           "The 1975",
@@ -247,6 +418,13 @@ export const Weather = () => {
           "Lana Del Rey",
           "Halsey",
           "Imagine Dragons",
+          "Florence + The Machine",
+          "Tame Impala",
+          "MGMT",
+          "Foster the People",
+          "Glass Animals",
+          "Clairo",
+          "Beabadoobee",
         ],
         "soft rock": [
           "Fleetwood Mac",
@@ -254,6 +432,14 @@ export const Weather = () => {
           "Billy Joel",
           "Elton John",
           "Phil Collins",
+          "Franco Simone",
+          "Rod Stewart",
+          "Lionel Richie",
+          "Andrés Calamaro",
+          "America",
+          "Toto",
+          "Christopher Cross",
+          "Michael McDonald",
         ],
       };
 
